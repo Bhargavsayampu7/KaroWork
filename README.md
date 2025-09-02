@@ -37,8 +37,3 @@ Open http://localhost:8080 in your browser.
 ## Notes
 
 - Authentication is mocked (role selection only) for demo purposes.
-- Replace mocked persistence with a backend when ready.
-
-## License
-
-MIT
