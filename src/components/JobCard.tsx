@@ -1,8 +1,12 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { MapPin, Clock, DollarSign, Building, Star, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSavedJobs } from "@/contexts/SavedJobsContext";
 
 interface JobCardProps {
   job: {
@@ -23,6 +27,38 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, className }: JobCardProps) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { isSaved, toggleJob } = useSavedJobs();
+  const bookmarked = isSaved(job.id);
+
+  const handleViewDetails = () => {
+    navigate(`/jobs/${job.id}`, { state: { job } });
+  };
+
+  const handleQuickApply = () => {
+    if (!user) {
+      toast({ title: "Please log in", description: "You must be logged in as a student to apply." });
+      navigate('/login', { state: { from: '/apply' } });
+      return;
+    }
+    if (user.role !== 'employee') {
+      toast({ title: "Employers cannot apply", description: "Switch to Student role to apply." });
+      return;
+    }
+    localStorage.setItem('pendingApplyJob', JSON.stringify(job));
+    navigate('/apply', { state: { job } });
+  };
+
+  const toggleBookmark = () => {
+    toggleJob(job);
+    toast({
+      title: bookmarked ? "Removed bookmark" : "Saved job",
+      description: `${job.title} • ${job.company}`,
+    });
+  };
+
   return (
     <Card className={cn(
       "group hover:shadow-card transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-primary/20",
@@ -43,8 +79,8 @@ export function JobCard({ job, className }: JobCardProps) {
               <p className="text-sm text-muted-foreground">{job.company}</p>
             </div>
           </div>
-          <button className="p-2 rounded-lg hover:bg-muted transition-colors">
-            <Bookmark className="w-5 h-5 text-muted-foreground hover:text-primary" />
+          <button className="p-2 rounded-lg hover:bg-muted transition-colors" onClick={toggleBookmark} aria-label={bookmarked ? 'Unsave' : 'Save'}>
+            <Bookmark className={cn("w-5 h-5 hover:text-primary", bookmarked ? "text-primary fill-current" : "text-muted-foreground")} />
           </button>
         </div>
 
@@ -100,10 +136,10 @@ export function JobCard({ job, className }: JobCardProps) {
 
       <CardFooter className="px-6 pb-6 pt-0">
         <div className="flex gap-3 w-full">
-          <Button variant="outline" className="flex-1">
+          <Button variant="outline" className="flex-1" onClick={handleViewDetails}>
             View Details
           </Button>
-          <Button variant="accent" className="flex-1">
+          <Button variant="accent" className="flex-1" onClick={handleQuickApply}>
             Quick Apply
           </Button>
         </div>
