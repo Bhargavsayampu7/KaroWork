@@ -1,5 +1,5 @@
 # KaroWork — Student Jobs & Employer Portal
-[KaroWork]{https://karo-work.vercel.app/}
+[KaroWork](https://karo-work.vercel.app/)
 KaroWork is a modern, premium job portal for students and employers. Students can discover curated roles and save jobs; employers can post jobs and manage applications from a polished dashboard.
 
 ## Tech Stack
